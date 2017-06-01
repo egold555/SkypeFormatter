@@ -9,7 +9,8 @@
 // ==/UserScript==
 
 //Example Size: #!100!Test
-//Example color: #|ff0000|Test
+//Example Color: #|ff0000|Test
+//Example blink: #%%Blinking Text
 (function(XHR) {
     "use strict";
 
@@ -29,7 +30,8 @@
         if(isMsg(data) && data != null) {       
             k = JSON.parse(data);
             var size = null;
-            var colour = null;
+            var color = null;
+            var blink = null;
             if(k.content.indexOf("##") > -1) {
                 k.content = k.content.replace('##','');
                 k.content = unescapeHTML(k.content);
@@ -40,7 +42,10 @@
                     size = k.content.match(/\!(.*?)\!/)[1];
                 }
                 if(k.content.indexOf("|") > -1) {
-                    colour = k.content.match(/\|(.*?)\|/)[1];
+                    color = k.content.match(/\|(.*?)\|/)[1];
+                }
+                if(k.content.indexOf("%") > -1) {
+                    blink = "S";
                 }
                 if(k.content.substring(0, 1) === "#") {    
                     k = replaceURL(k);
@@ -55,13 +60,27 @@
                             data = k;
                         }
                     }
-                    if(colour !== null) {
-                        k = changeFontColour(JSON.parse(data), colour);
+                    if(color !== null) {
+                        k = changeFontColor(JSON.parse(data), color);
                         if(k !== null) {
                             k = JSON.stringify(k);
                             data = k;
                         }
                     }
+                    if(blink != null) {
+                        k = blinkText(JSON.parse(data));
+                        if(k !== null) {
+                            k = JSON.stringify(k);
+                            data = k;
+                        }
+                    }
+                    /*if(true) {
+                        k = test(JSON.parse(data));
+                        if(k !== null) {
+                            k = JSON.stringify(k);
+                            data = k;
+                        }
+                    }*/
                 } 
             }
 
@@ -168,7 +187,7 @@ function changeFontSize(data, size) {
     }
 }
 
-function changeFontColour(data, colour) {
+function changeFontColor(data, color) {
     try {
         if(data.content.indexOf("#") > -1) {
             data.content = data.content.replace('#','');
@@ -176,10 +195,39 @@ function changeFontColour(data, colour) {
             data.content = data.content.replace(/[|]/g, '');
         }
 
-        data.content = "<font color='#" +  colour + "'>" + data.content + "</font>";
+        data.content = "<font color='#" +  color + "'>" + data.content + "</font>";
         return data;
     } catch(ex) {
         return null;
     }
 }
-123
+
+function blinkText(data) {
+    try {
+        if(data.content.indexOf("#") > -1) {
+            data.content = data.content.replace('#','');
+            data.content = data.content.replace(data.content.match(/\%(.*?)\%/)[1], '');
+            data.content = data.content.replace(/[%]/g, '');
+        }
+
+        data.content = "<blink>" + data.content + "</blink>";
+        return data;
+    } catch(ex) {
+        return null;
+    }
+}
+
+/*function test(data) {
+    try {
+        if(data.content.indexOf("#") > -1) {
+            data.content = data.content.replace('#','');
+            data.content = data.content.replace(data.content.match(/\%(.*?)\%/)[1], '');
+            data.content = data.content.replace(/[%]/g, '');
+        }
+
+        data.content = '' + data.content + "";
+        return data;
+    } catch(ex) {
+        return null;
+    }
+}*/
